@@ -27,24 +27,24 @@ pipeline {
                 }
             }
         }
-    //     stage('Install Dependencies') {
-    //         steps {
-    //             script {
-    //                sh """
-    //                     npm install
-    //                """
-    //             }
-    //         }
-    //     }
-    //     stage('Unit Testing') {
-    //         steps {
-    //             script {
-    //                sh """
-    //                     echo "unit tests"
-    //                """
-    //             }
-    //         }
-    //     }
+        stage('Install Dependencies') {
+            steps {
+                script {
+                   sh """
+                        npm install
+                   """
+                }
+            }
+        }
+        stage('Unit Testing') {
+            steps {
+                script {
+                   sh """
+                        echo "unit tests"
+                   """
+                }
+            }
+        }
 
 
     //     stage('Docker Build') {
