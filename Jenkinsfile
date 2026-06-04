@@ -79,7 +79,8 @@ pipeline {
     //         }
     //     }
         
-    // }
+    // 
+    }
 
     post { 
         always { 
@@ -92,6 +93,5 @@ pipeline {
         failure { 
             echo 'Hello Failure'
         }
-    }
     }
 }
