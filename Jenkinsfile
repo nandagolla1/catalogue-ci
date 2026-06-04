@@ -68,40 +68,84 @@ pipeline {
             }
         }
 
+
         stage('Check Dependabot Alerts') {
-            environment { 
-                GITHUB_TOKEN = credentials('github-token')
-            }
             steps {
                 script {
-                    // Fetch alerts from GitHub
-                    def response = sh(
-                        script: """
-                            curl -s -H "Accept: application/vnd.github+json" \
-                                 -H "Authorization: token ${GITHUB_TOKEN}" \
-                                 https://api.github.com/repos/nandagolla1/catalogue-ci/dependabot/alerts
-                        """,
-                        returnStdout: true
-                    ).trim()
 
-                    // Parse JSON
-                    def json = readJSON text: response
+                    withCredentials([string(credentialsId: 'github-token', variable: 'TOKEN')]) {
 
-                    // Filter alerts by severity
-                    def criticalOrHigh = json.findAll { alert ->
-                        def severity = alert?.security_advisory?.severity?.toLowerCase()
-                        def state = alert?.state?.toLowerCase()
-                        return (state == "open" && (severity == "critical" || severity == "high"))
-                    }
+                        def response = sh(
+                            script: '''
+                                curl -s \
+                                -H "Accept: application/vnd.github+json" \
+                                -H "Authorization: token $TOKEN" \
+                                https://api.github.com/repos/nandagolla1/catalogue-ci/dependabot/alerts
+                            ''',
+                            returnStdout: true
+                        ).trim()
 
-                    if (criticalOrHigh.size() > 0) {
-                        error "❌ Found ${criticalOrHigh.size()} HIGH/CRITICAL Dependabot alerts. Failing pipeline!"
-                    } else {
-                        echo "✅ No HIGH/CRITICAL Dependabot alerts found."
+                        echo "Dependabot API Response: ${response}"
+
+                        def json = readJSON text: response
+
+                        // If GitHub returns an error object instead of alerts array
+                        if (!(json instanceof List)) {
+                            error("Unexpected Dependabot API response: ${response}")
+                        }
+
+                        def criticalOrHigh = json.findAll { alert ->
+                            def severity = alert?.security_advisory?.severity?.toLowerCase()
+                            def state = alert?.state?.toLowerCase()
+
+                            return state == "open" &&
+                                (severity == "critical" || severity == "high")
+                        }
+
+                        if (criticalOrHigh.size() > 0) {
+                            error("Found ${criticalOrHigh.size()} HIGH/CRITICAL Dependabot alerts. Failing pipeline!")
+                        } else {
+                            echo "No HIGH/CRITICAL Dependabot alerts found."
+                        }
                     }
                 }
             }
         }
+
+        // stage('Check Dependabot Alerts') {
+        //     environment { 
+        //         GITHUB_TOKEN = credentials('github-token')
+        //     }
+        //     steps {
+        //         script {
+        //             // Fetch alerts from GitHub
+        //             def response = sh(
+        //                 script: """
+        //                     curl -s -H "Accept: application/vnd.github+json" \
+        //                          -H "Authorization: token ${GITHUB_TOKEN}" \
+        //                          https://api.github.com/repos/nandagolla1/catalogue-ci/dependabot/alerts
+        //                 """,
+        //                 returnStdout: true
+        //             ).trim()
+
+        //             // Parse JSON
+        //             def json = readJSON text: response
+
+        //             // Filter alerts by severity
+        //             def criticalOrHigh = json.findAll { alert ->
+        //                 def severity = alert?.security_advisory?.severity?.toLowerCase()
+        //                 def state = alert?.state?.toLowerCase()
+        //                 return (state == "open" && (severity == "critical" || severity == "high"))
+        //             }
+
+        //             if (criticalOrHigh.size() > 0) {
+        //                 error "❌ Found ${criticalOrHigh.size()} HIGH/CRITICAL Dependabot alerts. Failing pipeline!"
+        //             } else {
+        //                 echo "✅ No HIGH/CRITICAL Dependabot alerts found."
+        //             }
+        //         }
+        //     }
+        // }
 
 
         stage('Docker Build') {
