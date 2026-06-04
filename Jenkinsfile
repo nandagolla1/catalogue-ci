@@ -82,16 +82,16 @@ pipeline {
     // 
     }
 
-    // post { 
-    //     always { 
-    //         echo 'I will always say Hello again!'
-    //         deleteDir()
-    //     }
-    //     success { 
-    //         echo 'Hello Success'
-    //     }
-    //     failure { 
-    //         echo 'Hello Failure'
-    //     }
-    // }
+    post { 
+        always { 
+            echo 'I will always say Hello again!'
+            deleteDir()
+        }
+        success { 
+            echo 'Hello Success'
+        }
+        failure { 
+            echo 'Hello Failure'
+        }
+    }
 }
