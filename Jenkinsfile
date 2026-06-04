@@ -78,7 +78,7 @@ pipeline {
                     def response = sh(
                         script: """
                             curl -s -H "Accept: application/vnd.github+json" \
-                                 -H "Authorization: token ${github_token}" \
+                                 -H "Authorization: token ${GITHUB_TOKEN}" \
                                  https://api.github.com/repos/nandagolla1/catalogue-ci/dependabot/alerts
                         """,
                         returnStdout: true
